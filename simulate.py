@@ -9,26 +9,53 @@ from agents.rule_based_agent import RuleBasedAgent
 from agents.minimax_agent import MinimaxAgent
 
 
-def play_game(agent1, agent2, verbose=False):
+def play_game(agent1, agent2, verbose=False, agent1_name="Agent1", agent2_name="Agent2"):
     """Play a single game and return (winner, move_count)."""
     game = ConnectFour()
     agents = {1: agent1, 2: agent2}
+    agent_names = {1: agent1_name, 2: agent2_name}
     moves = []
+    move_num = 1
+
+    if verbose:
+        print("\n" + "=" * 60)
+        print("INITIAL BOARD STATE")
+        print("=" * 60)
+        print(game)
 
     while not game.is_terminal():
-        agent = agents[game.current_player]
+        current_player = game.current_player
+        agent = agents[current_player]
+        player_name = agent_names[current_player]
+
+        if verbose:
+            print(f"\n--- Move {move_num}: {player_name} (Player {current_player}) ---")
+
         move = agent.choose_move(game)
         moves.append(move)
+
+        if verbose:
+            print(f"{player_name} plays column {move}")
+
         game.apply_move(move)
+
+        if verbose:
+            print("\nBoard after move:")
+            print(game)
+
+        move_num += 1
 
     winner = game.winner()
     if verbose:
-        print(game)
-        print(f"Moves: {moves}")
+        print("\n" + "=" * 60)
+        print("GAME OVER")
+        print("=" * 60)
         if winner:
-            print(f"Player {winner} wins!")
+            print(f"🎉 Player {winner} ({agent_names[winner]}) WINS!")
         else:
             print("Draw!")
+        print(f"Total moves: {move_num - 1}")
+        print(f"Move sequence: {moves}")
 
     return winner, len(moves)
 
@@ -113,12 +140,22 @@ Notes:
             # Even games: agent1 moves first
             agent1 = create_agent(args.agent1, args.seed + game_num)
             agent2 = create_agent(args.agent2, args.seed + 1000 + game_num)
-            winner, move_count = play_game(agent1, agent2, verbose=args.verbose)
+            winner, move_count = play_game(
+                agent1, agent2,
+                verbose=args.verbose,
+                agent1_name=args.agent1.upper(),
+                agent2_name=args.agent2.upper()
+            )
         else:
             # Odd games: agent2 moves first
             agent2 = create_agent(args.agent2, args.seed + 1000 + game_num)
             agent1 = create_agent(args.agent1, args.seed + game_num)
-            winner, move_count = play_game(agent2, agent1, verbose=args.verbose)
+            winner, move_count = play_game(
+                agent2, agent1,
+                verbose=args.verbose,
+                agent1_name=args.agent2.upper(),
+                agent2_name=args.agent1.upper()
+            )
             # Flip winner since we swapped agent positions
             if winner is not None:
                 winner = 3 - winner
